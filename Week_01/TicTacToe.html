@@ -72,11 +72,11 @@
             }
         }
 
-        if (pattern[0] === pattern[4] && pattern[0] === pattern[8]){
+        if (pattern[0] && pattern[0] === pattern[4] && pattern[0] === pattern[8]){
             return pattern[0]
         }
 
-        if (pattern[2] === pattern[4] && pattern[2] === pattern[6]){
+        if (pattern[2] && pattern[2] === pattern[4] && pattern[2] === pattern[6]){
             return pattern[0]
         }
         return null
@@ -91,7 +91,7 @@
             const win = checkWin()
             if (win){
                 setTimeout(() =>{
-                    alert(`${win} is winter`)
+                    alert(`${CELL_PLACEHOLDER[win]} is winter`)
                 },0)
             }
 
