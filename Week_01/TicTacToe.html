@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .chessboard {
+            display: flex;
+            flex-wrap: wrap;
+            width: 300px;
+        }
+
+        .cell {
+            height: 100px;
+            width: 100px;
+            border: 1px solid #fff;
+            background: #888;
+            box-sizing: border-box;
+            cursor: pointer;
+            line-height: 100px;
+            text-align: center;
+            font-size: 30px;
+        }
+    </style>
+</head>
+<body>
+
+
+<div id="tic_tac_top" class="chessboard">
+</div>
+
+<script>
+    const pattern = Array.from({length: 9})
+
+
+    const CELL_PLACEHOLDER = {
+        '0': '',
+        '1': '⭕',
+        '2': '✖',
+    }
+
+    function show() {
+        const boardDom = document.querySelector('#tic_tac_top')
+        boardDom.innerHTML = null
+
+        for (let i = 0; i < pattern.length; i++) {
+            const number = pattern[i]
+            const cell = document.createElement('div');
+            cell.classList.add('cell')
+            cell.setAttribute('data-cellid',i + '')
+            cell.innerText = CELL_PLACEHOLDER[number] || ''
+            boardDom.appendChild(cell)
+        }
+    }
+
+
+    // FIXME 这里对判断算法赢得判断做的不是很好
+    function checkWin(){
+        for (let i = 0; i < 9; i++) {
+            // 判断横向和竖向
+            if (i % 3 === 0){
+                if (pattern[i] && pattern[i] === pattern[i + 1] && pattern[i] === pattern[i + 2]){
+                    return pattern[i]
+                }
+            }
+
+            if (i < 3){
+                if (pattern[i] && pattern[i] === pattern[i + 3] && pattern[i] === pattern[i + 3 + 3]){
+                    return pattern[i]
+                }
+            }
+        }
+
+        if (pattern[0] === pattern[4] && pattern[0] === pattern[8]){
+            return pattern[0]
+        }
+
+        if (pattern[2] === pattern[4] && pattern[2] === pattern[6]){
+            return pattern[0]
+        }
+        return null
+    }
+
+    let color = 1
+    const boardDom = document.querySelector('#tic_tac_top')
+    const boardCellHandle = (event) => {
+
+        const check = () =>{
+            show()
+            const win = checkWin()
+            if (win){
+                setTimeout(() =>{
+                    alert(`${win} is winter`)
+                },0)
+            }
+
+
+            return !!win
+        }
+        if (check()){
+            return;
+        }
+
+        const cellId = event.target.dataset.cellid
+        if (pattern[cellId]) {
+            // 落过子了。
+            return
+        }
+        pattern[cellId] = color
+        color = 3 - color
+        check()
+    }
+    boardDom.addEventListener('click',boardCellHandle)
+
+    show()
+</script>
+</body>
+</html>
