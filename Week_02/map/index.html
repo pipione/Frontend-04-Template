@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 600px;
+        }
+
+        .cell {
+            width: 6px;
+            height: 6px;
+            line-height: 6px;
+            vertical-align: top;
+            border: 1px solid;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container" class="container"></div>
+<button onclick="localStorage.setItem('map',JSON.stringify(map))">
+    save
+</button>
+<script>
+
+    class Sorted {
+        constructor(data, compare) {
+            this.data = [...data]
+            this.compare = compare || ((a, b) => a - b)
+        }
+
+        take() {
+            if (!this.data.length) {
+                return
+            }
+
+            let [min] = this.data
+            let minIndex = 0
+
+            for (let i = 1; i < this.data.length; i++) {
+                if (this.compare(this.data[i], min) < 0) {
+                    min = this.data[i]
+                    minIndex = i
+                }
+            }
+
+            this.data[minIndex] = this.data[this.data.length - 1]
+            this.data.pop()
+            return min
+
+        }
+
+
+        get length() {
+            return this.data.length
+        }
+
+        push(v) {
+            this.data.push(v)
+        }
+    }
+
+
+    const containerDom = document.querySelector('#container')
+    const map = JSON.parse(localStorage.getItem('map')) || Array(10000).fill(0)
+
+    let isMouseDown = false
+    let isClear = false
+
+    document.addEventListener('mousedown', function (e) {
+        isClear = (e.which === 3)
+        isMouseDown = true
+    })
+    document.addEventListener('mouseup', function () {
+        isMouseDown = false
+    })
+    document.addEventListener('contextmenu', function (e) {
+        e.preventDefault()
+    })
+
+
+    function buildMap() {
+        for (let y = 0; y < 100; y++) {
+            for (let x = 0; x < 100; x++) {
+                let cell = document.createElement('div')
+
+                cell.classList.add('cell')
+                if (map[y * 100 + x] === 1) {
+                    cell.style.background = '#000'
+                }
+                cell.addEventListener('mousemove', () => {
+
+                    if (isMouseDown) {
+                        if (isClear) {
+                            map[y * 100 + x] = 0
+                            cell.style.background = ''
+                        } else {
+                            map[y * 100 + x] = 1
+                            cell.style.background = '#000'
+                        }
+
+                    }
+                })
+                containerDom.appendChild(cell)
+            }
+        }
+    }
+
+    buildMap()
+
+    const mapNodes = containerDom.childNodes
+
+
+    function sleep(ms) {
+        return new Promise(resolve => {
+            setTimeout(resolve, ms)
+        })
+    }
+
+    function make(x, y, color = 'red') {
+        const target = mapNodes[y * 100 + x]
+
+        if (target) {
+            target.style.background = color
+        }
+    }
+
+    function getCoordinate(x, y) {
+        return y * 100 + x
+    }
+
+    async function findPath(map, start, end) {
+        const queue = new Sorted([start], (a, b) => distance(a) - distance(b))
+
+        const table = {...map}
+
+
+        function distance(point) {
+            return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2
+        }
+
+        function insert(x, y, pre) {
+            if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+                return
+            }
+            let coordinate = getCoordinate(x, y)
+            if (map[coordinate]) {
+                return
+            }
+
+            map[coordinate] = 2
+            table[coordinate] = pre
+
+            queue.push([x, y])
+        }
+
+
+        while (queue.length) {
+            let [x, y] = queue.take()
+
+            if (x === end[0] && y === end[1]) {
+                make(x, y, 'blue')
+                const path = []
+                while (x !== start[0] || y !== start[1]) {
+                    let coordinate = getCoordinate(x, y);
+
+                    path.push(map[coordinate]);
+                    [x, y] = table[coordinate]
+
+                    make(x, y, '#888')
+                    path.push([x, y])
+
+                }
+
+                return true
+            }
+            make(x, y)
+            insert(x - 1, y, [x, y])
+            insert(x + 1, y, [x, y])
+            insert(x, y - 1, [x, y])
+            insert(x, y + 1, [x, y])
+
+            insert(x - 1, y - 1, [x, y])
+            insert(x + 1, y + 1, [x, y])
+            insert(x - 1, y + 1, [x, y])
+            insert(x + 1, y - 1, [x, y])
+
+            await sleep(1)
+        }
+
+
+        return false
+    }
+
+</script>
+</body>
+</html>
