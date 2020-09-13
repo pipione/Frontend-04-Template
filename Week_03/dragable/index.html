@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>拖拽2</title>
+    <style>
+        .dragable {
+            height: 100px;
+            width: 100px;
+            display: inline-block;
+            background: red;
+        }
+    </style>
+</head>
+<body>
+
+<div id="dragable" class="dragable">
+
+</div>
+
+<script>
+
+    const dragableDom = document.querySelector("#dragable")
+
+    let prevX = 0;
+    let prevY = 0
+
+    dragableDom.addEventListener('mousedown', function (event) {
+        const startX = event.clientX
+        const startY = event.clientY
+
+        function handleUp({clientY, clientX}) {
+            console.log('ddd', clientY)
+            prevX += clientX - startX
+            prevY += clientY - startY
+
+            document.removeEventListener('mousemove', handleMove)
+            document.removeEventListener('mouseup', handleUp)
+
+        }
+
+        document.addEventListener('mousemove', handleMove)
+
+        function handleMove({clientY, clientX}) {
+            dragableDom.style.transform = `translate(${prevX + clientX - startX}px, ${prevY + clientY - startY}px)`
+
+        }
+
+        document.addEventListener('mouseup', handleUp)
+
+    })
+
+
+</script>
+</body>
+</html>
