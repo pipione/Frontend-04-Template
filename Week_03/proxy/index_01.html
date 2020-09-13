@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script>
+    let obj = {
+        a: 2,
+        b: 2
+    }
+
+    let objProxy = reactive(obj)
+
+    const callbacks = []
+    effect(() => {
+        console.log('effect', objProxy.a)
+    })
+
+
+    function effect(callback) {
+        callbacks.push(callback)
+    }
+
+    function reactive(object) {
+        return new Proxy(object, {
+            set(target, p, value, receiver) {
+                console.log('set:', p, value)
+                target[p] = value
+
+                for (let callback of callbacks) {
+                    callback()
+                }
+
+                return target[p]
+
+            },
+            get(target, p, receiver) {
+                return target[p]
+            }
+        })
+    }
+</script>
+</body>
+</html>
